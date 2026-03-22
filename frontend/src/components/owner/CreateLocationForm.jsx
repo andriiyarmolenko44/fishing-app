@@ -54,8 +54,13 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
   const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
 
   const createdRef = useRef(false);
+  const photosRef = useRef([]);
   const descriptionRef = useRef(null);
   const contactsRef = useRef(null);
+
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
 
   function getDraftPublicIds() {
     return (photos || [])
@@ -79,15 +84,17 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
   useEffect(() => {
     return () => {
       if (createdRef.current) return;
-      const publicIds = getDraftPublicIds();
+      const publicIds = (photosRef.current || [])
+        .filter((p) => !p.id && p.publicId)
+        .map((p) => String(p.publicId).trim())
+        .filter(Boolean);
       if (!publicIds.length) return;
 
       http.post("/photos/cleanup", { publicIds }).catch((e) => {
         console.error("cleanup failed:", getErrorMessage(e, "cleanup failed"));
       });
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos]);
+  }, []);
 
   async function submit(e) {
     e.preventDefault();
