@@ -117,6 +117,7 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
       setFieldErrors(nextFieldErrors);
       if (hasLocationFieldErrors(nextFieldErrors)) return;
 
+      createdRef.current = true;
       await onCreate({
         title: title.trim(),
         description: description.trim(),
@@ -132,8 +133,6 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
         photoUrls: normalizedPhotos.map((p) => p.url), // optional backward compat
       });
 
-      createdRef.current = true;
-
       setTitle("");
       setDescription("");
       setRegionSelected("");
@@ -146,6 +145,7 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
       setPhotos([]);
       setFieldErrors(emptyFieldErrors);
     } catch (err) {
+      createdRef.current = false;
       setCreateError(getErrorMessage(err, t("ownerCreate.errors.createFailed"), t));
     } finally {
       setCreating(false);
