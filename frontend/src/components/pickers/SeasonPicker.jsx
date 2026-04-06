@@ -16,7 +16,6 @@ export default function SeasonPicker({ value, onChange }) {
     return OPTIONS
       .filter((x) => !(value || []).includes(x))
       .filter((x) => {
-        // search by code OR localized label
         const label = t(`seasons.${x}`, x).toLowerCase();
         return x.toLowerCase().includes(q) || label.includes(q);
       })

@@ -105,10 +105,7 @@ export default function AdminDashboardPage() {
   async function toggleDetails(id) {
     setErrorText("");
 
-    // toggle open/close
     setExpandedId((prev) => (prev === id ? null : id));
-
-    // cached already
     if (detailsById[id]) return;
 
     setDetailsLoadingId(id);

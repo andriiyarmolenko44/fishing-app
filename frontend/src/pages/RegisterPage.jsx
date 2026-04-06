@@ -9,15 +9,11 @@ import "./RegisterPage.css";
 function isValidEmail(emailValue) {
   const e = String(emailValue || "").trim();
 
-  // only printable ASCII (blocks кирилицю/emoji)
   if (!/^[\u0021-\u007E]+$/.test(e)) return false;
-
-  // basic email shape
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 }
 
 function isValidDisplayName(displayNameValue) {
-  // only latin letters, digits, . and _ , 3–30
   const regexForDisplayName = /^[a-zA-Z0-9._]{3,30}$/;
   return regexForDisplayName.test(displayNameValue);
 }

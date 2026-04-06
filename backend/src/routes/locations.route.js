@@ -62,7 +62,6 @@ function normalizePhotos(photos, max = 6) {
   return out.slice(0, max);
 }
 
-// GET /locations (guest search)
 router.get(
   "/",
   asyncHandler(async (req, res) => {
@@ -75,9 +74,8 @@ router.get(
       page = "1",
       limit = "10",
 
-      // dropdown sort
-      sort = "createdAt", // createdAt | updatedAt | rating
-      order = "desc", // asc | desc
+      sort = "createdAt",
+      order = "desc",
     } = req.query;
 
     const regionCode = region ? String(region).trim().toUpperCase() : null;
@@ -123,7 +121,6 @@ router.get(
 
     const total = await prisma.location.count({ where });
 
-    // SORT BY RATING
     if (sortKey === "rating") {
       const allIdsRows = await prisma.location.findMany({
         where,
@@ -193,7 +190,6 @@ router.get(
       });
     }
 
-    // SORT BY createdAt / updatedAt
     const orderField = sortKey === "updatedat" ? "updatedAt" : "createdAt";
 
     const items = await prisma.location.findMany({
@@ -247,7 +243,6 @@ router.get(
   }),
 );
 
-// POST /locations (owner creates)
 router.post(
   "/",
   authenticateToken,
@@ -266,10 +261,8 @@ router.post(
       seasonCodes = [],
       contactInfo,
 
-      // new
       photos = null,
 
-      // old fallback
       photoUrls = [],
     } = req.body;
 
@@ -390,7 +383,6 @@ router.post(
   }),
 );
 
-// GET /fish
 router.get(
   "/fish",
   asyncHandler(async (req, res) => {
@@ -403,7 +395,6 @@ router.get(
   }),
 );
 
-// GET /locations/:id/reviews (public)
 router.get(
   "/:id/reviews",
   asyncHandler(async (req, res) => {
@@ -421,7 +412,6 @@ router.get(
   }),
 );
 
-// POST /locations/:id/reviews (auth) - one review per user per location
 router.post(
   "/:id/reviews",
   authenticateToken,
@@ -483,7 +473,6 @@ router.post(
   }),
 );
 
-// GET /locations/:id (public details) - only APPROVED
 router.get(
   "/:id",
   asyncHandler(async (req, res) => {
@@ -523,7 +512,6 @@ router.get(
   }),
 );
 
-// GET /locations/:id/contact (auth)
 router.get(
   "/:id/contact",
   authenticateToken,

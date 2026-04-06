@@ -8,7 +8,6 @@ function authenticateToken(req, res, next) {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    // payload = { id, role, email, iat, exp }
     req.user = payload;
     next();
   } catch (e) {

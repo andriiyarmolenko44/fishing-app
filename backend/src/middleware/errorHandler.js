@@ -4,7 +4,6 @@ const { ErrorCode } = require("../utils/errorCodes");
 function errorHandler(err, req, res, next) {
   const requestId = req.requestId;
 
-  // Prisma unique constraint
   if (err && err.code === "P2002") {
     return res.status(409).json({
       error: {
@@ -16,7 +15,6 @@ function errorHandler(err, req, res, next) {
     });
   }
 
-  // Our explicit AppError
   if (err instanceof AppError) {
     return res.status(err.status).json({
       error: {
@@ -28,7 +26,6 @@ function errorHandler(err, req, res, next) {
     });
   }
 
-  // Fallback
   console.error(err);
   return res.status(500).json({
     error: {

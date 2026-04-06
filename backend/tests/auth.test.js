@@ -6,30 +6,23 @@ describe("Auth - register", () => {
   it("should register a new user", async () => {
     const email = `test_${Date.now()}@example.com`;
 
-    const res = await request(app)
-      .post("/auth/register") // <- якщо в тебе інший route, зміни тут
-      .send({
-        email,
-        password: "Password123!",
-        displayName: "TestUser",
-      });
+    const res = await request(app).post("/auth/register").send({
+      email,
+      password: "Password123!",
+      displayName: "TestUser",
+    });
 
     expect([200, 201]).toContain(res.status);
-
-    // перевірка, що у відповіді є хоч щось корисне
     expect(res.body).toBeTruthy();
 
-    // якщо API повертає user окремим полем
     if (res.body.user) {
       expect(res.body.user.email).toBe(email);
       expect(res.body.user.password).toBeUndefined();
       expect(res.body.user.passwordHash).toBeUndefined();
     } else {
-      // якщо API повертає user напряму
       expect(res.body.email || res.body.data?.email).toBe(email);
     }
 
-    // перевірка, що юзер реально є в БД
     const userInDb = await prisma.user.findUnique({
       where: { email },
     });
@@ -77,7 +70,6 @@ describe("Auth - login", () => {
     expect([200, 201]).toContain(res.status);
     expect(res.body).toBeTruthy();
 
-    // Підлаштовуємося під різні формати відповіді
     const token =
       res.body.token ||
       res.body.accessToken ||

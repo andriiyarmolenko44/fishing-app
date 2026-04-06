@@ -18,7 +18,6 @@ function signToken(user) {
   );
 }
 
-// POST /auth/register
 router.post(
   "/register",
   asyncHandler(async (req, res) => {
@@ -70,7 +69,6 @@ router.post(
       const token = signToken(user);
       res.status(201).json({ user, token });
     } catch (e) {
-      // Unique constraint (email/displayName)
       if (e && e.code === "P2002") {
         const target = e.meta?.target || [];
 
@@ -94,7 +92,6 @@ router.post(
   }),
 );
 
-// POST /auth/login
 router.post(
   "/login",
   asyncHandler(async (req, res) => {
@@ -112,7 +109,6 @@ router.post(
       where: { email: emailNorm },
     });
 
-    // Security: do not reveal which field is wrong
     if (!user) {
       throw new AppError(401, ErrorCode.UNAUTHORIZED, "Invalid credentials");
     }

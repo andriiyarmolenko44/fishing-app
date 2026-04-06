@@ -7,7 +7,6 @@ const { asyncHandler } = require("../utils/asyncHandler");
 const { AppError } = require("../utils/AppError");
 const { ErrorCode } = require("../utils/errorCodes");
 
-// GET /me -> current user
 router.get(
   "/",
   authenticateToken,
@@ -31,7 +30,6 @@ router.get(
   }),
 );
 
-// PATCH /me -> update displayName
 router.patch(
   "/",
   authenticateToken,
@@ -68,7 +66,6 @@ router.patch(
 
       res.json({ user });
     } catch (e) {
-      // unique conflict for displayName if you have such constraint
       if (e && e.code === "P2002") {
         throw new AppError(409, ErrorCode.CONFLICT, "Display name already taken", {
           field: "displayName",
@@ -82,7 +79,6 @@ router.patch(
   }),
 );
 
-// PATCH /me/password -> change password
 router.patch(
   "/password",
   authenticateToken,

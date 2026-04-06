@@ -51,7 +51,6 @@ export default function EditLocationForm({ loc, onSave, onCancel }) {
   const [editError, setEditError] = useState("");
   const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
 
-  // so unmount cleanup won't run after successful save
   const savedRef = useRef(false);
   const descriptionRef = useRef(null);
   const contactsRef = useRef(null);
@@ -169,12 +168,11 @@ export default function EditLocationForm({ loc, onSave, onCancel }) {
 
     try {
       await http.post("/photos/cleanup", { publicIds });
-    } catch (e) {
-      console.error("cleanup failed:", getErrorMessage(e, "cleanup failed"));
+    } catch {
+      return;
     }
   }
 
-  // cleanup drafts when the edit form unmounts (tab switch / closing edit)
   useEffect(() => {
     return () => {
       if (savedRef.current) return;
@@ -182,9 +180,7 @@ export default function EditLocationForm({ loc, onSave, onCancel }) {
       const publicIds = getDraftPublicIds();
       if (!publicIds.length) return;
 
-      http.post("/photos/cleanup", { publicIds }).catch((e) => {
-        console.error("cleanup failed:", getErrorMessage(e, "cleanup failed"));
-      });
+      http.post("/photos/cleanup", { publicIds }).catch(() => null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photos]);
@@ -268,7 +264,6 @@ export default function EditLocationForm({ loc, onSave, onCancel }) {
 
     if (!photo) return;
 
-    // persisted photo remove in edit mode: local-only until Save
     if (photo.id) {
       setPendingDeletedPhotoIds((prev) =>
         prev.includes(photo.id) ? prev : [...prev, photo.id],
@@ -277,13 +272,11 @@ export default function EditLocationForm({ loc, onSave, onCancel }) {
       return;
     }
 
-    // draft photo (no id) remove locally
     if (photo.publicId) {
       handlePhotosChange((photos || []).filter((p) => p.publicId !== photo.publicId));
       return;
     }
 
-    // fallback: remove by url
     if (photo.url) {
       handlePhotosChange((photos || []).filter((p) => p.url !== photo.url));
     }

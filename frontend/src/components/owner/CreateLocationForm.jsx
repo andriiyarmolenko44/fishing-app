@@ -75,12 +75,11 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
 
     try {
       await http.post("/photos/cleanup", { publicIds });
-    } catch (e) {
-      console.error("cleanup failed:", getErrorMessage(e, "cleanup failed"));
+    } catch {
+      return;
     }
   }
 
-  // cleanup when leaving the create form without creating
   useEffect(() => {
     return () => {
       if (createdRef.current) return;
@@ -90,9 +89,7 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
         .filter(Boolean);
       if (!publicIds.length) return;
 
-      http.post("/photos/cleanup", { publicIds }).catch((e) => {
-        console.error("cleanup failed:", getErrorMessage(e, "cleanup failed"));
-      });
+      http.post("/photos/cleanup", { publicIds }).catch(() => null);
     };
   }, []);
 
