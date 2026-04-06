@@ -1,4 +1,3 @@
-// routes/photos.route.js
 const router = require("express").Router();
 const prisma = require("../db/client");
 const { authenticateToken } = require("../middleware/auth");
@@ -8,8 +7,6 @@ const { asyncHandler } = require("../utils/asyncHandler");
 const { AppError } = require("../utils/AppError");
 const { ErrorCode } = require("../utils/errorCodes");
 
-// POST /photos/cleanup
-// body: { publicIds: string[] }
 router.post(
   "/cleanup",
   authenticateToken,
@@ -53,7 +50,6 @@ router.post(
   }),
 );
 
-// DELETE /photos/:id
 router.delete(
   "/:id",
   authenticateToken,
@@ -85,12 +81,10 @@ router.delete(
       throw new AppError(403, ErrorCode.FORBIDDEN, "Forbidden");
     }
 
-    // 1) delete from Cloudinary
     if (photo.publicId) {
       await cloudinary.uploader.destroy(photo.publicId);
     }
 
-    // 2) delete from DB
     try {
       await prisma.photo.delete({ where: { id: photoId } });
     } catch (e) {

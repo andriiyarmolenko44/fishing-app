@@ -6,7 +6,6 @@ const { AppError } = require("../utils/AppError");
 const { ErrorCode } = require("../utils/errorCodes");
 const cloudinary = require("../utils/cloudinary");
 
-//DB seed
 router.post(
   "/seed",
   asyncHandler(async (req, res) => {
@@ -29,7 +28,6 @@ router.post("/clear", async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  // одна підтверджувалка, щоб не вайпнути випадково
   if (req.header("x-confirm") !== "CLEAR") {
     return res.status(400).json({ error: "Missing x-confirm: CLEAR" });
   }
@@ -44,10 +42,8 @@ router.post("/clear", async (req, res) => {
   }
 });
 
-// All /admin routes require JWT + ADMIN role
 router.use(authenticateToken, requireRole("ADMIN"));
 
-// GET /admin/locations?status=PENDING
 router.get(
   "/locations",
   asyncHandler(async (req, res) => {
@@ -85,7 +81,6 @@ router.get(
   }),
 );
 
-// PATCH /admin/locations/:id/status  body: { status: "APPROVED"|"REJECTED"|"HIDDEN" }
 router.patch(
   "/locations/:id/status",
   asyncHandler(async (req, res) => {
@@ -115,7 +110,6 @@ router.patch(
   }),
 );
 
-// Keep old endpoints for compatibility (optional)
 router.patch(
   "/locations/:id/approve",
   asyncHandler(async (req, res) => {
@@ -202,13 +196,11 @@ router.get(
   }),
 );
 
-// DELETE only if HIDDEN
 router.delete(
   "/locations/:id",
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    // 1) забираємо локацію + фото (publicId)
     const loc = await prisma.location.findUnique({
       where: { id },
       select: {
@@ -232,25 +224,19 @@ router.delete(
       );
     }
 
-    // 2) видаляємо фотки з Cloudinary (тільки якщо є publicId)
     const publicIds = (loc.photos || [])
       .map((p) => (p.publicId ? String(p.publicId).trim() : ""))
       .filter(Boolean);
 
     if (publicIds.length) {
-      // найкраще батчем, а не циклом destroy
       await cloudinary.api.delete_resources(publicIds, {
         resource_type: "image",
-        // type: "upload", // можна не вказувати, дефолт upload
       });
     }
 
-    // 3) видаляємо локацію в БД (Cascade прибере rows Photo)
     await prisma.location.delete({ where: { id } });
 
-    // я б повертав 204, але якщо тобі зручніше {ok:true} — лишай
     return res.status(204).send();
-    // або: res.json({ ok: true, deletedPhotos: publicIds.length });
   }),
 );
 

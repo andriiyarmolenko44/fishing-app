@@ -63,7 +63,6 @@ export default function LocationDetailsPage() {
         setError("");
         await loadAll();
       } catch (err) {
-        console.error(err);
         if (!cancelled) {
           setError(getErrorMessage(err, t("locationDetails.errors.loadFailed"), t));
         }
@@ -76,6 +75,7 @@ export default function LocationDetailsPage() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadAll]);
 
   useEffect(() => {
@@ -90,11 +90,7 @@ export default function LocationDetailsPage() {
       try {
         const res = await http.get(`/locations/${id}/contact`);
         if (!cancelled) setContactInfo(res.data.contactInfo || null);
-      } catch (e) {
-        console.error(
-          t("locationDetails.errors.loadContactsFailed"),
-          getErrorMessage(e, t("locationDetails.errors.loadContactsFailed"), t),
-        );
+      } catch {
         if (!cancelled) setContactInfo(null);
       }
     }
@@ -130,7 +126,6 @@ export default function LocationDetailsPage() {
       setRating(5);
       await loadAll();
     } catch (err) {
-      console.error(err);
       setFormError(
         getErrorMessage(err, t("locationDetails.errors.submitReviewFailed"), t),
       );

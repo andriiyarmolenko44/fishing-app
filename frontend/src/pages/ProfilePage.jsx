@@ -19,11 +19,9 @@ export default function ProfilePage() {
 
   const [redirectToLogin, setRedirectToLogin] = useState(false);
 
-  // profile edit
   const [displayName, setDisplayName] = useState("");
   const displayNameTrim = displayName.trim();
 
-  // password change
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

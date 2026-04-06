@@ -1,21 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../../client/i18n/I18nContext";
 import "./PhotoUploader.css";
-
-/**
- * Photos format:
- * - existing from DB: { id: "uuid", url: "https://...", createdAt?: "..." }
- * - new after Cloudinary upload (not saved yet): { url: "https://...", publicId: "abc/123" }
- *
- * Props:
- * - photos: array of photo objects (see above)
- * - onChange: (nextPhotos) => void
- * - max: max photos allowed (default 5 or 10, up to you)
- * - onRemove: optional async (photo) => void
- *   If provided and photo.id exists, you can call your API DELETE /photos/:id there.
- * - draftFolder: optional string, e.g. `drafts/<userId>`
- *   If provided, uploads will go to that Cloudinary folder (helps cleanup safety).
- */
 export default function PhotoUploader({
   photos = [],
   onChange,
@@ -38,11 +23,13 @@ export default function PhotoUploader({
   const MAX_BYTES = 10 * 1024 * 1024;
 
   useEffect(() => {
+    const pendingBlobUrls = pendingBlobUrlsRef.current;
+
     return () => {
-      for (const url of pendingBlobUrlsRef.current) {
+      for (const url of pendingBlobUrls) {
         URL.revokeObjectURL(url);
       }
-      pendingBlobUrlsRef.current.clear();
+      pendingBlobUrls.clear();
     };
   }, []);
 
@@ -60,7 +47,7 @@ export default function PhotoUploader({
     return {
       tempId: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
       previewUrl,
-      status: "uploading", // uploading | failed
+      status: "uploading",
       fileName: file?.name ? String(file.name) : "",
     };
   }
@@ -205,8 +192,7 @@ export default function PhotoUploader({
       } else {
         setErrorText("");
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
       setErrorText(t("photos.errors.uploadFailed"));
     } finally {
       setUploading(false);
@@ -239,8 +225,7 @@ export default function PhotoUploader({
       const next = (photos || []).filter((_, i) => i !== idx);
       onChange(next);
       setErrorText("");
-    } catch (e) {
-      console.error(e);
+    } catch {
       setErrorText(t("photos.errors.removeFailed"));
     }
   }

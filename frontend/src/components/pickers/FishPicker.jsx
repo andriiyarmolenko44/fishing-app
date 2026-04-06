@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { http } from "../../api/http";
-import { getErrorMessage } from "../../api/getErrorMessage";
 import { useI18n } from "../../client/i18n/I18nContext";
 import { displayFishName } from "../../client/i18n/displayName";
 import { formatSelectionSummary } from "./selectionSummary";
@@ -20,11 +19,7 @@ export default function FishPicker({ value, onChange }) {
         const res = await http.get("/locations/fish");
         const names = (res.data.items || []).map((x) => x.name).filter(Boolean);
         if (!cancelled) setOptions(names);
-      } catch (e) {
-        console.error(
-          "Failed to load fish:",
-          getErrorMessage(e, t("fishPicker.loadFailed"), t),
-        );
+      } catch {
         if (!cancelled) setOptions([]);
       }
     }

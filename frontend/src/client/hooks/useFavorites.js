@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { http } from "../../api/http";
 import { getStoredUser } from "../../auth/auth";
 
-const IDS_LIMIT = 500; // MVP
+const IDS_LIMIT = 500;
 
 export function useFavorites() {
   const user = getStoredUser();
@@ -12,30 +12,26 @@ export function useFavorites() {
   }, [user]);
 
   const [favoriteIds, setFavoriteIds] = useState(() => new Set());
-  const [loadingFavs, setLoadingFavs] = useState(false);
 
   const refreshFavoriteIds = useCallback(async () => {
     if (!canUseFavorites) {
       setFavoriteIds(new Set());
       return;
     }
-    setLoadingFavs(true);
+
     try {
       const res = await http.get("/favorites", {
         params: { page: 1, limit: IDS_LIMIT },
       });
       const ids = (res.data.items || []).map((x) => x.id);
       setFavoriteIds(new Set(ids));
-    } catch (e) {
-      console.error(e);
-      // MVP: тихо, без фаталу
-    } finally {
-      setLoadingFavs(false);
+    } catch {
+      setFavoriteIds(new Set());
     }
   }, [canUseFavorites]);
 
   useEffect(() => {
-    refreshFavoriteIds();
+    queueMicrotask(refreshFavoriteIds);
   }, [refreshFavoriteIds]);
 
   const isFavorite = useCallback(
@@ -49,7 +45,6 @@ export function useFavorites() {
 
       const wasFav = favoriteIds.has(locationId);
 
-      // optimistic UI
       setFavoriteIds((prev) => {
         const next = new Set(prev);
         if (wasFav) next.delete(locationId);
@@ -64,9 +59,7 @@ export function useFavorites() {
           await http.post(`/favorites/${locationId}`);
         }
         return { ok: true, nowFav: !wasFav };
-      } catch (e) {
-        console.error(e);
-        // rollback
+      } catch {
         setFavoriteIds((prev) => {
           const next = new Set(prev);
           if (wasFav) next.add(locationId);
@@ -81,10 +74,7 @@ export function useFavorites() {
 
   return {
     canUseFavorites,
-    favoriteIds,
-    loadingFavs,
     isFavorite,
     toggleFavorite,
-    refreshFavoriteIds,
   };
 }

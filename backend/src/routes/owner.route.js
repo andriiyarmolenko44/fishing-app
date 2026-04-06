@@ -6,7 +6,6 @@ const { asyncHandler } = require("../utils/asyncHandler");
 const { AppError } = require("../utils/AppError");
 const { ErrorCode } = require("../utils/errorCodes");
 
-// Everything in /owner is OWNER only
 router.use(authenticateToken, requireRole("OWNER"));
 
 const REGION_CODES = new Set([
@@ -67,7 +66,6 @@ function normalizePhotoUrls(photoUrls, max = 6) {
   return unique.slice(0, max);
 }
 
-// GET /owner/locations?page=1&limit=20
 router.get(
   "/locations",
   asyncHandler(async (req, res) => {
@@ -103,7 +101,6 @@ router.get(
   }),
 );
 
-// GET /owner/locations/:id
 router.get(
   "/locations/:id",
   asyncHandler(async (req, res) => {
@@ -130,8 +127,6 @@ router.get(
   }),
 );
 
-// PATCH /owner/locations/:id
-// Rule: if it was APPROVED and owner changes content, set back to PENDING
 router.patch(
   "/locations/:id",
   asyncHandler(async (req, res) => {
@@ -147,8 +142,8 @@ router.patch(
       fishNames,
       seasonCodes,
       contactInfo,
-      photos, // optional: [{ url, publicId }]
-      photoUrls, // optional: ordered urls used for explicit photo order persistence
+      photos,
+      photoUrls,
     } = req.body;
 
     const data = {};
@@ -240,9 +235,6 @@ router.patch(
       : null;
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1) Update only if this location belongs to current owner
-      // Also: if it was APPROVED, set it back to PENDING on any edit attempt
-      // We'll do it by reading status inside tx to avoid race.
       const current = await tx.location.findFirst({
         where: { id, ownerId: req.user.id },
         select: { id: true, status: true },
@@ -266,7 +258,6 @@ router.patch(
         throw new AppError(404, ErrorCode.NOT_FOUND, "Location not found");
       }
 
-      // 2) fishNames: full replace
       if (Array.isArray(fishNames)) {
         const fishList = fishNames.map((x) => String(x).trim()).filter(Boolean);
 
@@ -287,7 +278,6 @@ router.patch(
         }
       }
 
-      // 3) seasonCodes: full replace
       if (Array.isArray(seasonCodes)) {
         const seasonRows = seasonCodes.length
           ? await tx.season.findMany({
@@ -306,7 +296,6 @@ router.patch(
         }
       }
 
-      // 4) photos: add only new, no delete
       if (normalizedNewPhotos) {
         const existingPhotos = await tx.photo.findMany({
           where: { locationId: id },
@@ -334,7 +323,6 @@ router.patch(
         }
       }
 
-      // 5) Persist explicit photo order from payload.
       // We use createdAt sequencing because reads are ordered by createdAt asc, id asc.
       if (normalizedPhotoUrls) {
         const currentPhotos = await tx.photo.findMany({
@@ -355,7 +343,6 @@ router.patch(
             ordered.push(photo);
           }
 
-          // Keep any DB rows missing from payload at the end (defensive fallback).
           for (const photo of currentPhotos) {
             if (usedIds.has(photo.id)) continue;
             ordered.push(photo);
@@ -373,7 +360,6 @@ router.patch(
         }
       }
 
-      // 6) return updated location
       return tx.location.findFirst({
         where: { id, ownerId: req.user.id },
         include: {
@@ -392,7 +378,6 @@ router.patch(
   }),
 );
 
-// POST /owner/locations/:id/hide -> set status HIDDEN
 router.post(
   "/locations/:id/hide",
   asyncHandler(async (req, res) => {
@@ -432,7 +417,6 @@ router.post(
   }),
 );
 
-// POST /owner/locations/:id/unhide -> set status PENDING
 router.post(
   "/locations/:id/unhide",
   asyncHandler(async (req, res) => {

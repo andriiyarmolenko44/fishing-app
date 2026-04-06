@@ -22,14 +22,12 @@ export default function HomePage() {
   const [error, setError] = useState("");
   const [favoriteError, setFavoriteError] = useState("");
 
-  // UI controls
   const [regionSelected, setRegionSelected] = useState("");
   const [waterType, setWaterType] = useState("");
   const [fishSelected, setFishSelected] = useState([]);
   const [seasonsSelected, setSeasonsSelected] = useState([]);
   const [sortValue, setSortValue] = useState("createdAt:desc");
 
-  // applied filters
   const [appliedFilters, setAppliedFilters] = useState({
     region: "",
     waterType: "",
@@ -75,7 +73,6 @@ export default function HomePage() {
       setItems(res.data.items || []);
       setTotal(res.data.total || 0);
     } catch (err) {
-      console.error(err);
       setError(getErrorMessage(err, t("home.errors.loadFailed"), t));
     } finally {
       setLoading(false);

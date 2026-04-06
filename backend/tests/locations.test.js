@@ -98,7 +98,7 @@ describe("GET /locations", () => {
     expect(titles).not.toContain("Carp Spot");
   });
 
-  it("should return 404 when owner tries to edit чужу location", async () => {
+  it("should return 404 when owner tries to edit another owner's location", async () => {
     const { token: owner1Token } = await registerAndLogin("OWNER");
 
     const createPayload = {
@@ -128,7 +128,7 @@ describe("GET /locations", () => {
     const { token: owner2Token } = await registerAndLogin("OWNER");
 
     const patchRes = await request(app)
-      .patch(`/locations/${locationId}`)
+      .patch(`/owner/locations/${locationId}`)
       .set("Authorization", `Bearer ${owner2Token}`)
       .send({
         title: "Hacked title",

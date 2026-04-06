@@ -28,7 +28,6 @@ export async function login(email, password) {
 }
 
 export async function register(payload) {
-  // payload: {email,password,displayName,role}
   const res = await http.post("/auth/register", payload);
   const { token, user } = res.data;
   saveAuth(token, user);

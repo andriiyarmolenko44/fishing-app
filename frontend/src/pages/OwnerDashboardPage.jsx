@@ -15,7 +15,7 @@ export default function OwnerDashboardPage() {
   const user = getStoredUser();
   const { t } = useI18n();
 
-  const [activeTab, setActiveTab] = useState("LIST"); // LIST | CREATE
+  const [activeTab, setActiveTab] = useState("LIST");
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,6 @@ export default function OwnerDashboardPage() {
         setPage(1);
         await loadMyLocations(1);
       } catch (err) {
-        console.error(err);
         if (!cancelled)
           setError(
             getErrorMessage(err, t("owner.errors.loadLocationsFailed"), t),
@@ -111,9 +110,8 @@ export default function OwnerDashboardPage() {
       setActiveTab("LIST");
       await refresh();
     } catch (e) {
-      // keep user on CREATE, show error
       setError(getErrorMessage(e, t("owner.errors.createLocationFailed"), t));
-      throw e; // let CreateLocationForm show it too if it wants
+      throw e;
     }
   }
 
@@ -134,7 +132,7 @@ export default function OwnerDashboardPage() {
       setEditingId(null);
     } catch (e) {
       setError(getErrorMessage(e, t("owner.errors.updateLocationFailed"), t));
-      throw e; // let EditLocationForm show it too
+      throw e;
     }
   }
 
@@ -149,7 +147,6 @@ export default function OwnerDashboardPage() {
       await http.post(path);
       await refresh();
     } catch (e) {
-      console.error(e);
       setError(getErrorMessage(e, t("owner.errors.updateStatusFailed"), t));
     }
   }
