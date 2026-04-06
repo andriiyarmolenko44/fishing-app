@@ -6,6 +6,8 @@ Fishing App is a small monorepo with:
 - a React + Vite frontend for browsing locations, registration/login, owner tools, admin moderation, and favorites
 - a PostgreSQL database managed through Prisma migrations and seed scripts
 
+Demo: https://fishing-app-diploma.vercel.app/
+
 ## Repository Layout
 
 ```text
