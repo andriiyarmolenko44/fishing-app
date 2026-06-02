@@ -10,6 +10,7 @@ import FishPicker from "../pickers/FishPicker";
 import SeasonPicker from "../pickers/SeasonPicker";
 import PhotoUploader from "./PhotoUploader";
 import LocationPickerMap from "./LocationPickerMap";
+import { detectRegion } from "./detectRegion";
 import {
   LOCATION_LIMITS,
   validateLocationTextFields,
@@ -38,6 +39,7 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
   const [description, setDescription] = useState("");
 
   const [regionSelected, setRegionSelected] = useState("");
+  const [regionDetectionStatus, setRegionDetectionStatus] = useState("idle");
   const [waterType, setWaterType] = useState("LAKE");
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
@@ -57,10 +59,15 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
   const photosRef = useRef([]);
   const descriptionRef = useRef(null);
   const contactsRef = useRef(null);
+  const regionRequestRef = useRef(null);
 
   useEffect(() => {
     photosRef.current = photos;
   }, [photos]);
+
+  useEffect(() => {
+    return () => regionRequestRef.current?.abort();
+  }, []);
 
   function getDraftPublicIds() {
     return (photos || [])
@@ -133,6 +140,7 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
       setTitle("");
       setDescription("");
       setRegionSelected("");
+      setRegionDetectionStatus("idle");
       setWaterType("LAKE");
       setLat("");
       setLng("");
@@ -156,28 +164,37 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
     if (typeof onCancel === "function") onCancel();
   }
 
-  function handleRegionChange(next) {
-    const nextRegion = String(next || "").trim();
-    setRegionSelected(next);
-    setFieldErrors((prev) => ({
-      ...prev,
-      region: prev.region ? (nextRegion ? "" : t("locationForm.errors.regionRequired")) : "",
-    }));
-  }
-
-  function handleCoordinatesSelect(nextLat, nextLng) {
+  async function handleCoordinatesSelect(nextLat, nextLng) {
     const latValue = String(nextLat);
     const lngValue = String(nextLng);
 
     setLat(latValue);
     setLng(lngValue);
+    setRegionSelected("");
+    setRegionDetectionStatus("loading");
 
     setFieldErrors((prev) => ({
       ...prev,
+      region: "",
       coordinates: prev.coordinates
         ? getCoordinatesError(latValue.trim(), lngValue.trim(), t)
         : "",
     }));
+
+    regionRequestRef.current?.abort();
+    const controller = new AbortController();
+    regionRequestRef.current = controller;
+
+    try {
+      const region = await detectRegion(nextLat, nextLng, { signal: controller.signal });
+      if (regionRequestRef.current !== controller) return;
+      setRegionSelected(region);
+      setRegionDetectionStatus("success");
+    } catch (error) {
+      if (error.name === "AbortError") return;
+      if (regionRequestRef.current !== controller) return;
+      setRegionDetectionStatus("error");
+    }
   }
 
   function handlePhotosChange(nextPhotos) {
@@ -303,9 +320,10 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
         <div style={fieldLabel}>{t("locationForm.labels.region")}</div>
         <RegionPicker
           value={regionSelected}
-          onChange={handleRegionChange}
-          dropdownZIndex={1301}
+          readOnly
+          placeholder={getRegionPlaceholder(regionDetectionStatus, t)}
         />
+        <RegionDetectionMessage status={regionDetectionStatus} t={t} />
         <FieldError msg={fieldErrors.region} />
       </div>
 
@@ -454,6 +472,22 @@ export default function CreateLocationForm({ onCreate, onCancel }) {
 function FieldError({ msg }) {
   if (!msg) return null;
   return <div className="error-text register-page__field-error">{msg}</div>;
+}
+
+function RegionDetectionMessage({ status, t }) {
+  if (status === "loading") {
+    return <div className="type-label">{t("locationForm.regionDetecting")}</div>;
+  }
+  if (status === "error") {
+    return <div className="error-text">{t("locationForm.regionDetectionFailed")}</div>;
+  }
+  return null;
+}
+
+function getRegionPlaceholder(status, t) {
+  if (status === "loading") return t("locationForm.regionDetecting");
+  if (status === "error") return t("locationForm.regionUnavailable");
+  return t("locationForm.regionSelectPoint");
 }
 
 const input = {

@@ -351,6 +351,10 @@
       contactsPlaceholder: "Contacts (optional)",
       latPlaceholder: "Lat (e.g. 50.45)",
       lngPlaceholder: "Lng (e.g. 30.52)",
+      regionSelectPoint: "Select a point on the map",
+      regionDetecting: "Detecting region...",
+      regionUnavailable: "Region could not be detected",
+      regionDetectionFailed: "Could not detect the region. Select a point on the map again.",
       mapStatus: {
         selected: "Selected",
         clickToSelect: "Click on the map to select coordinates",
@@ -810,6 +814,10 @@
       contactsPlaceholder: "Контакти (необовʼязково)",
       latPlaceholder: "Широта (напр. 50.45)",
       lngPlaceholder: "Довгота (напр. 30.52)",
+      regionSelectPoint: "Виберіть точку на мапі",
+      regionDetecting: "Визначення області...",
+      regionUnavailable: "Не вдалося визначити область",
+      regionDetectionFailed: "Не вдалося визначити область. Виберіть точку на мапі ще раз.",
       mapStatus: {
         selected: "Вибрано",
         clickToSelect: "Натисніть на мапі, щоб вибрати координати",
