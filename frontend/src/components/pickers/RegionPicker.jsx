@@ -34,6 +34,7 @@ export default function RegionPicker({
   onChange,
   placeholder,
   dropdownZIndex = 10,
+  readOnly = false,
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -65,6 +66,19 @@ export default function RegionPicker({
     onChange(code);
     setQuery("");
     setOpen(false);
+  }
+
+  if (readOnly) {
+    return (
+      <input
+        className="input"
+        placeholder={ph}
+        value={selectedLabel}
+        readOnly
+        aria-readonly="true"
+        style={input}
+      />
+    );
   }
 
   return (
